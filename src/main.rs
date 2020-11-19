@@ -9,7 +9,7 @@ mod util;
 
 pub use error::Result;
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
     let matches = App::new("rshell")
         .version("0.1.0")

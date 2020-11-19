@@ -29,6 +29,7 @@ impl<E: 'static + error::Error + Send + IntoError> From<E> for Error {
 }
 
 impl IntoError for std::io::Error {}
+impl IntoError for std::net::AddrParseError {}
 
 impl IntoError for openssl::error::ErrorStack {}
 impl IntoError for tokio_openssl::HandshakeError<TcpStream> {}

@@ -40,13 +40,13 @@ pub async fn client(addr: &str, sni: &str, verify: bool) -> Result<()> {
     let stdin = &mut AsyncFd::try_from(libc::STDIN_FILENO)?;
     let stdout = &mut AsyncFd::try_from(libc::STDOUT_FILENO)?;
 
-    let (mut ds1, mut ds2) = duplex(2048);
+    let (mut sender, mut receiver) = duplex(65536);
 
     let link1 = async {
-        let buf = &mut vec![0; 1024];
+        let buf = &mut vec![0; 2048];
         loop {
             let n = pty_reader.read(buf).await?;
-            ds1.write_all(&buf[..n]).await?;
+            sender.write_all(&buf[..n]).await?;
             tcp_writer.write_all(&buf[..n]).await?;
         }
     };
@@ -54,15 +54,15 @@ pub async fn client(addr: &str, sni: &str, verify: bool) -> Result<()> {
     let link2 = async { Ok(io::copy(tcp_reader, pty_writer).await.map(drop)?) };
 
     let echo = async {
-        let buf = &mut vec![0; 1024];
+        let buf = &mut vec![0; 2048];
         loop {
-            let n = ds2.read(buf).await?;
+            let n = receiver.read(buf).await?;
             stdout.write_all(&buf[..n]).await?;
         }
     };
 
     let read = async {
-        let buf = &mut vec![0; 1024];
+        let buf = &mut vec![0; 2048];
         loop {
             if stdin.read(buf).await? == 0 {
                 break;

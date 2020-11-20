@@ -6,6 +6,7 @@ use tokio_fd::AsyncFd;
 use crate::*;
 
 pub async fn server(addr: &str, cert: &str, key: &str) -> Result<()> {
+    println!("fingerprint: {}", tls::cert_digest(cert)?);
     let listener = util::listen_reuseport(addr)?;
     let tcpstream = listener.accept().await?.0;
     drop(listener);

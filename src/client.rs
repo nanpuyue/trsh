@@ -14,6 +14,7 @@ pub async fn client(addr: &str, sni: &str, verify: bool) -> Result<()> {
     let tcpstream = TcpStream::connect(addr).await?;
     tcpstream.set_nodelay(true)?;
     let tlsstream = tls::tls_connect(tcpstream, sni, verify).await?;
+    println!("fingerprint: {}", tls::peer_digest(&tlsstream)?);
 
     let (pty_master, pid) = term::fork_pty()?;
     unsafe { term::PTY_MASTER = Some(pty_master) };

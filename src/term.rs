@@ -75,7 +75,7 @@ pub fn fork_pty() -> Result<(c_int, pid_t)> {
     }
 }
 
-pub extern "C" fn sigwinch_handler(_signal: c_int) {
+extern "C" fn sigwinch_handler(_signal: c_int) {
     if let Ok(winsize) = get_winsize(STDIN_FILENO) {
         if let Some(pty_master) = unsafe { PTY_MASTER } {
             let _ = set_winsize(pty_master, &winsize);
@@ -83,8 +83,12 @@ pub extern "C" fn sigwinch_handler(_signal: c_int) {
     }
 }
 
-pub extern "C" fn sigchld_handler(_signal: c_int) {
-    unsafe { exit(0) }
+extern "C" fn sigchld_handler(_signal: c_int) {
+    unsafe { exit(0) };
+}
+
+extern "C" fn sigint_handler(_signal: c_int) {
+    unsafe { exit(0) };
 }
 
 pub fn register_signal_handler(signal: c_int, handler: extern "C" fn(c_int)) -> Result<()> {
@@ -102,35 +106,39 @@ pub fn register_signal_handler(signal: c_int, handler: extern "C" fn(c_int)) -> 
     Ok(())
 }
 
-pub extern "C" fn exit_handler() {
+extern "C" fn exit_handler() {
     if let Some(termios) = unsafe { &ORIGINAL_TERMIOS } {
         let _ = set_termios(STDIN_FILENO, termios);
     }
-    print!("\r\n");
+    print!("exit\r\n");
+}
+
+pub fn set_exit_handler() {
+    unsafe { libc::atexit(exit_handler) };
 }
 
 pub fn setup_terminal(fd: RawFd, isig: bool) -> Result<()> {
     if unsafe { isatty(STDIN_FILENO) } == 1 {
-        let termios = get_termios(STDIN_FILENO)?;
-        unsafe {
-            ORIGINAL_TERMIOS = Some(termios);
-            libc::atexit(exit_handler);
-        };
         enter_raw_mode(STDIN_FILENO, isig)?;
 
         let winsize = get_winsize(STDIN_FILENO)?;
         set_winsize(fd, &winsize)?;
 
         register_signal_handler(SIGWINCH, sigwinch_handler)?;
-        register_signal_handler(SIGCHLD, sigchld_handler)?;
     }
+
+    register_signal_handler(SIGCHLD, sigchld_handler)?;
+    register_signal_handler(SIGINT, sigint_handler)?;
 
     Ok(())
 }
 
-fn enter_raw_mode(fd: RawFd, isig: bool) -> Result<()> {
+pub fn enter_raw_mode(fd: RawFd, isig: bool) -> Result<()> {
     let mut termios = get_termios(fd)?;
-    unsafe { cfmakeraw(&mut termios) };
+    unsafe {
+        ORIGINAL_TERMIOS = Some(termios);
+        cfmakeraw(&mut termios)
+    };
     if isig {
         termios.c_lflag |= ISIG;
     }

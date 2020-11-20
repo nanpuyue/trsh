@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 use std::ffi::CString;
-use std::io::Error;
+use std::io::{stdin, Error};
 use std::ptr::null;
 
 use tokio::io::{duplex, AsyncReadExt, AsyncWriteExt};
@@ -14,7 +14,18 @@ pub async fn client(addr: &str, sni: &str, verify: bool) -> Result<()> {
     let tcpstream = TcpStream::connect(addr).await?;
     tcpstream.set_nodelay(true)?;
     let tlsstream = tls::tls_connect(tcpstream, sni, verify).await?;
-    println!("fingerprint: {}", tls::peer_digest(&tlsstream)?);
+
+    println!("Server fingerprint: {}", tls::peer_digest(&tlsstream)?);
+    if !verify {
+        println!("Do you want continue? [y/N]");
+        let buf = &mut String::new();
+        stdin().read_line(buf)?;
+        if !buf.to_ascii_lowercase().starts_with('y') {
+            return Ok(());
+        }
+    }
+
+    println!("You can use \"Ctrl + C\" to disconnect at any time.\n");
 
     let (pty_master, pid) = term::fork_pty()?;
     unsafe { term::PTY_MASTER = Some(pty_master) };

@@ -64,6 +64,8 @@ async fn main() -> Result<()> {
         )
         .get_matches();
 
+    term::set_exit_handler();
+
     if let Some(listen) = matches.value_of("listen") {
         let cert = matches.value_of("cert").unwrap();
         let key = matches.value_of("key").unwrap();

@@ -6,9 +6,14 @@ use tokio_fd::AsyncFd;
 use crate::*;
 
 pub async fn server(addr: &str, cert: &str, key: &str) -> Result<()> {
-    println!("fingerprint: {}", tls::cert_digest(cert)?);
+    println!("Server fingerprint: {}", tls::cert_digest(cert)?);
+
     let listener = util::listen_reuseport(addr)?;
-    let tcpstream = listener.accept().await?.0;
+    println!("Waiting for client to connect...");
+
+    let (tcpstream, peer) = listener.accept().await?;
+    println!("Client \"{}\" connected.\n", peer.to_string());
+
     drop(listener);
     tcpstream.set_nodelay(true)?;
 
@@ -17,16 +22,15 @@ pub async fn server(addr: &str, cert: &str, key: &str) -> Result<()> {
     let stdin = &mut AsyncFd::try_from(libc::STDIN_FILENO)?;
     let stdout = &mut AsyncFd::try_from(libc::STDOUT_FILENO)?;
 
-    term::setup_terminal(libc::STDIN_FILENO, false)?;
+    term::enter_raw_mode(libc::STDIN_FILENO, false)?;
 
-    let link = select! {
+    Ok((select! {
         a = io::copy(stdin, writer) => {
             a
         },
         b = io::copy(reader, stdout) => {
             b
         }
-    };
-
-    Ok(link.map(drop)?)
+    })
+    .map(drop)?)
 }

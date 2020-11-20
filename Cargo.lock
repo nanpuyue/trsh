@@ -31,9 +31,9 @@ checksum = "e0dcbc35f504eb6fc275a6d20e4ebcda18cf50d40ba6fabff8c711fa16cb3b16"
 
 [[package]]
 name = "cc"
-version = "1.0.63"
+version = "1.0.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad9c6140b5a2c7db40ea56eb1821245e5362b44385c05b76288b1a599934ac87"
+checksum = "92cc7b4cfeaa608da27ccbd00af8e1485761334821791ccf5ce88e9a2bb949e7"
 
 [[package]]
 name = "cfg-if"
@@ -358,9 +358,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-fd"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d59a17456f7ec29192c5adb2010ded31ba43486d13560ae33134feaa152d845b"
+checksum = "c1bf016cfff6b6aa45efc6cb64277f782a2764b5e0dd7ac90e9099424b1ca861"
 dependencies = [
  "libc",
  "tokio",

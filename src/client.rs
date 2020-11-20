@@ -20,7 +20,7 @@ pub async fn client(addr: &str, sni: &str, verify: bool) -> Result<()> {
 
     if pid == 0 {
         let exe = CString::new("/usr/bin/env").unwrap();
-        let argv: Vec<_> = vec!["", "bash"]
+        let argv: Vec<_> = vec!["", "bash", "-l"]
             .iter()
             .map(|&x| CString::new(x).unwrap())
             .collect();

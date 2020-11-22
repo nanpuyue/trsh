@@ -82,5 +82,5 @@ pub(crate) fn listen_reuseport(addr: &str) -> Result<TcpListener> {
     }?;
     socket.set_reuseport(true)?;
     socket.bind(addr)?;
-    Ok(socket.listen(0)?)
+    Ok(socket.listen(64)?)
 }

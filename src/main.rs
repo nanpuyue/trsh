@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
 
     term::set_exit_handler();
 
-    if let Some(listen) = matches.value_of("listen") {
+    let ret = if let Some(listen) = matches.value_of("listen") {
         let cert = matches.value_of("cert").unwrap();
         let key = matches.value_of("key").unwrap();
         server::server(listen, cert, key).await
@@ -88,5 +88,9 @@ async fn main() -> Result<()> {
         client::client(server, sni, verify, readonly).await
     } else {
         Ok(())
-    }
+    };
+
+    let _ = term::restore_termios();
+
+    ret.map_err(|e| e.to_string().into())
 }

@@ -106,11 +106,17 @@ pub fn register_signal_handler(signal: c_int, handler: extern "C" fn(c_int)) -> 
     Ok(())
 }
 
-extern "C" fn exit_handler() {
-    if let Some(termios) = unsafe { &ORIGINAL_TERMIOS } {
-        let _ = set_termios(STDIN_FILENO, termios);
+pub fn restore_termios() -> Result<()> {
+    if let Some(termios) = unsafe { ORIGINAL_TERMIOS.take() } {
+        set_termios(STDIN_FILENO, &termios)
+    } else {
+        Ok(())
     }
-    print!("exit\r\n");
+}
+
+extern "C" fn exit_handler() {
+    let _ = restore_termios();
+    println!("exited.");
 }
 
 pub fn set_exit_handler() {
@@ -128,7 +134,10 @@ pub fn setup_terminal(fd: RawFd, isig: bool) -> Result<()> {
     }
 
     register_signal_handler(SIGCHLD, sigchld_handler)?;
-    register_signal_handler(SIGINT, sigint_handler)?;
+
+    if isig {
+        register_signal_handler(SIGINT, sigint_handler)?;
+    }
 
     Ok(())
 }

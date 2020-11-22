@@ -22,6 +22,18 @@ impl Display for Error {
     }
 }
 
+impl Into<Error> for String {
+    fn into(self) -> Error {
+        Error::String(self)
+    }
+}
+
+impl Into<Error> for &str {
+    fn into(self) -> Error {
+        Error::String(self.to_owned())
+    }
+}
+
 impl<E: 'static + error::Error + Send + IntoError> From<E> for Error {
     fn from(e: E) -> Self {
         Self::Boxed(Box::new(e))

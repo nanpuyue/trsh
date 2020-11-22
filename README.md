@@ -1,15 +1,15 @@
-# A Reverse Shell Tool with TLS
+# A TLS encrypted Reverse Shell
 
 ## Usage
 
 ```
-$ rshell -h
-rshell 0.1.1
+$ trsh -h
+trsh 0.1.1
 南浦月 <nanpuyue@gmail.com>
-A Reverse Shell Tool with TLS
+A TLS encrypted Reverse Shell
 
 USAGE:
-    rshell [FLAGS] [OPTIONS]
+    trsh [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information
@@ -28,7 +28,7 @@ OPTIONS:
 ### Server
 
 ```shell script
-$ rshell -l 0.0.0.0:2022 -c rshell.crt -k rshell.key
+$ trsh -l 0.0.0.0:2022 -c trsh.crt -k trsh.key
 Server fingerprint: KjyG4ONKfTUjjsAzgEFcPpwCCaLeVtHgNqEAfWo9Oj8=
 Waiting for client to connect...
 ```
@@ -36,7 +36,7 @@ Waiting for client to connect...
 ### Client
 
 ```shell script
-$ rshell -r -n -s server.host:2022
+$ trsh -r -n -s server.host:2022
 Server fingerprint: KjyG4ONKfTUjjsAzgEFcPpwCCaLeVtHgNqEAfWo9Oj8=
 Do you want continue? [y/N]
 y
@@ -51,12 +51,12 @@ Or you can use a certificate trusted by the system without `-n`.
 ### Generate a self-signed certificate
 
 ```shell script
-openssl genrsa -out rshell.key 2048
-openssl req -new -x509 -days 365 -key rshell.key -out rshell.crt -subj "/CN=rshell"
+openssl genrsa -out trsh.key 2048
+openssl req -new -x509 -days 365 -key trsh.key -out trsh.crt -subj "/CN=trsh"
 ```
 
 ## License
 
 This project is licensed under the [MIT license].
 
-[MIT license]: https://github.com/nanpuyue/rshell/blob/master/LICENSE
+[MIT license]: https://github.com/nanpuyue/trsh/blob/master/LICENSE

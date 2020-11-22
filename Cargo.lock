@@ -281,18 +281,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "41cc0f7e4d5d4544e8861606a285bb08d3e70712ccc7d2b84d7c0ccfaf4b05ce"
 
 [[package]]
-name = "rshell"
-version = "0.1.1"
-dependencies = [
- "clap",
- "libc",
- "openssl",
- "tokio",
- "tokio-fd",
- "tokio-openssl",
-]
-
-[[package]]
 name = "slab"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -392,6 +380,18 @@ dependencies = [
  "openssl",
  "openssl-sys",
  "tokio",
+]
+
+[[package]]
+name = "trsh"
+version = "0.1.1"
+dependencies = [
+ "clap",
+ "libc",
+ "openssl",
+ "tokio",
+ "tokio-fd",
+ "tokio-openssl",
 ]
 
 [[package]]

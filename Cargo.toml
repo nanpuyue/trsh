@@ -1,7 +1,13 @@
 [package]
-name = "rshell"
+name = "trsh"
 version = "0.1.1"
 authors = ["南浦月 <nanpuyue@gmail.com>"]
+description = "A TLS encrypted Reverse Shell"
+homepage = "https://github.com/nanpuyue/trsh"
+repository = "https://github.com/nanpuyue/trsh.git"
+keywords = ["reverse", "shell", "tls"]
+categories = ["command-line-utilities"]
+license = "MIT"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

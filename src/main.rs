@@ -11,10 +11,10 @@ pub use error::Result;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
-    let matches = App::new("rshell")
+    let matches = App::new("trsh")
         .version("0.1.1")
         .author("南浦月 <nanpuyue@gmail.com>")
-        .about("A Reverse Shell Tool with TLS")
+        .about("A TLS encrypted Reverse Shell")
         .arg(
             Arg::new("listen")
                 .short('l')

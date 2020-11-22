@@ -12,14 +12,14 @@ pub use error::Result;
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
     let matches = App::new("rshell")
-        .version("0.1.0")
+        .version("0.1.1")
         .author("南浦月 <nanpuyue@gmail.com>")
         .about("A Reverse Shell Tool with TLS")
         .arg(
             Arg::new("listen")
                 .short('l')
                 .value_name("IP:PORT")
-                .about("Listen address")
+                .about("Listen address (server, required)")
                 .takes_value(true)
                 .requires_all(&["cert", "key"])
                 .required_unless_present("server"),
@@ -28,21 +28,21 @@ async fn main() -> Result<()> {
             Arg::new("cert")
                 .short('c')
                 .value_name("FILE")
-                .about("Certificate chain file")
+                .about("Certificate chain file (server, required)")
                 .takes_value(true),
         )
         .arg(
             Arg::new("key")
                 .short('k')
                 .value_name("FILE")
-                .about("Private key file")
+                .about("Private key file (server, required)")
                 .takes_value(true),
         )
         .arg(
             Arg::new("server")
                 .short('s')
                 .value_name("HOST:PORT")
-                .about("Server address to connect")
+                .about("Server address to connect (client, required)")
                 .takes_value(true)
                 .required_unless_present("listen")
                 .conflicts_with("listen"),
@@ -51,14 +51,21 @@ async fn main() -> Result<()> {
             Arg::new("domain")
                 .short('d')
                 .value_name("DOMAIN")
-                .about("Server name to verify (optional)")
+                .about("Server name to verify (client)")
                 .takes_value(true)
                 .conflicts_with("listen"),
         )
         .arg(
-            Arg::new("not_verify")
+            Arg::new("verify")
                 .short('n')
-                .about("Do not verify the tls cert")
+                .about("Do not verify the server certificate (client)")
+                .takes_value(false)
+                .conflicts_with("listen"),
+        )
+        .arg(
+            Arg::new("readonly")
+                .short('r')
+                .about("Readonly mode (client)")
                 .takes_value(false)
                 .conflicts_with("listen"),
         )
@@ -76,8 +83,9 @@ async fn main() -> Result<()> {
         } else {
             server.split(':').next().unwrap_or_default()
         };
-        let verify = matches.index_of("not_verify").is_none();
-        client::client(server, sni, verify).await
+        let verify = matches.index_of("verify").is_none();
+        let readonly = matches.index_of("readonly").is_some();
+        client::client(server, sni, verify, readonly).await
     } else {
         Ok(())
     }

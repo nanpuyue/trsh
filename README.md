@@ -4,7 +4,7 @@
 
 ```
 $ rshell -h
-rshell 0.1.0
+rshell 0.1.1
 南浦月 <nanpuyue@gmail.com>
 A Reverse Shell Tool with TLS
 
@@ -13,15 +13,16 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
-    -n               Do not verify the tls cert
+    -r               Readonly mode (client)
+    -n               Do not verify the server certificate (client)
     -V, --version    Prints version information
 
 OPTIONS:
-    -c <FILE>             Certificate chain file
-    -d <DOMAIN>           Server name to verify (optional)
-    -k <FILE>             Private key file
-    -l <IP:PORT>          Listen address
-    -s <HOST:PORT>        Server address to connect
+    -c <FILE>             Certificate chain file (server, required)
+    -d <DOMAIN>           Server name to verify (client)
+    -k <FILE>             Private key file (server, required)
+    -l <IP:PORT>          Listen address (server, required)
+    -s <HOST:PORT>        Server address to connect (client, required)
 ```
 
 ### Server
@@ -35,7 +36,7 @@ Waiting for client to connect...
 ### Client
 
 ```shell script
-$ rshell -n -s server.host:2022
+$ rshell -r -n -s server.host:2022
 Server fingerprint: KjyG4ONKfTUjjsAzgEFcPpwCCaLeVtHgNqEAfWo9Oj8=
 Do you want continue? [y/N]
 y
@@ -43,7 +44,7 @@ You can use "Ctrl + C" to disconnect at any time.
 
 ```
 
-Or you can use the certificate trusted by the system without `-n`.
+Or you can use a certificate trusted by the system without `-n`.
 
 ## Tips
 

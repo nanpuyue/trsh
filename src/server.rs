@@ -3,12 +3,15 @@ use std::convert::TryFrom;
 use tokio::{io, select};
 use tokio_fd::AsyncFd;
 
-use crate::*;
+use crate::error::Result;
+use crate::term::enter_raw_mode;
+use crate::tls::{cert_digest, tls_accept};
+use crate::util::listen_reuseport;
 
 pub async fn server(addr: &str, cert: &str, key: &str) -> Result<()> {
-    println!("Server fingerprint: {}", tls::cert_digest(cert)?);
+    println!("Server fingerprint: {}", cert_digest(cert)?);
 
-    let listener = util::listen_reuseport(addr)?;
+    let listener = listen_reuseport(addr)?;
     println!("Waiting for client to connect...");
 
     let (tcpstream, peer) = listener.accept().await?;
@@ -17,20 +20,20 @@ pub async fn server(addr: &str, cert: &str, key: &str) -> Result<()> {
     drop(listener);
     tcpstream.set_nodelay(true)?;
 
-    let tlsstream = tls::tls_accept(tcpstream, cert, key).await?;
+    let tlsstream = tls_accept(tcpstream, cert, key).await?;
     let (reader, writer) = &mut io::split(tlsstream);
     let stdin = &mut AsyncFd::try_from(libc::STDIN_FILENO)?;
     let stdout = &mut AsyncFd::try_from(libc::STDOUT_FILENO)?;
 
-    term::enter_raw_mode(libc::STDIN_FILENO, false)?;
+    enter_raw_mode(libc::STDIN_FILENO, false)?;
 
-    Ok((select! {
+    Ok(select! {
         a = io::copy(stdin, writer) => {
             a
         },
         b = io::copy(reader, stdout) => {
             b
         }
-    })
-    .map(drop)?)
+    }?)
+    .map(drop)
 }

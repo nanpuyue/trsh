@@ -7,9 +7,9 @@ use std::task::{Context, Poll, Poll::*};
 use tokio::io::{self, AsyncRead, ReadBuf};
 use tokio::net::{TcpListener, TcpSocket};
 
-use crate::*;
+use crate::error::Result;
 
-pub(crate) trait AsPtr<T> {
+pub trait AsPtr<T> {
     fn as_ptr(&self) -> *const T;
     fn as_mut_ptr(&mut self) -> *mut T;
 }
@@ -30,13 +30,13 @@ impl<T> AsPtr<T> for Option<T> {
     }
 }
 
-pub(crate) struct Merge<T, U> {
+pub struct Merge<T, U> {
     a: T,
     b: U,
     a_first: bool,
 }
 
-pub(crate) fn merge_reader<T, U>(a: T, b: U) -> Merge<T, U>
+pub fn merge_reader<T, U>(a: T, b: U) -> Merge<T, U>
 where
     T: AsyncRead + Unpin,
     U: AsyncRead + Unpin,
@@ -74,7 +74,7 @@ impl<T: AsyncRead + Unpin, U: AsyncRead + Unpin> AsyncRead for Merge<T, U> {
     }
 }
 
-pub(crate) fn listen_reuseport(addr: &str) -> Result<TcpListener> {
+pub fn listen_reuseport(addr: &str) -> Result<TcpListener> {
     let addr = SocketAddr::from_str(addr)?;
     let socket = match addr {
         SocketAddr::V4(_) => TcpSocket::new_v4(),

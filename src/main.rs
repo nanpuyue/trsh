@@ -7,7 +7,8 @@ mod term;
 mod tls;
 mod util;
 
-pub use error::Result;
+use error::Result;
+use term::{restore_termios, set_exit_handler};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
@@ -71,7 +72,7 @@ async fn main() -> Result<()> {
         )
         .get_matches();
 
-    term::set_exit_handler();
+    let _ = set_exit_handler();
 
     let ret = if let Some(listen) = matches.value_of("listen") {
         let cert = matches.value_of("cert").unwrap();
@@ -90,7 +91,7 @@ async fn main() -> Result<()> {
         Ok(())
     };
 
-    let _ = term::restore_termios();
+    let _ = restore_termios();
 
     ret.map_err(|e| e.to_string().into())
 }

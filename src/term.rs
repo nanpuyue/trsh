@@ -10,7 +10,7 @@ use crate::util::AsPtr;
 pub static mut PTY_MASTER: Option<c_int> = None;
 static mut ORIGINAL_TERMIOS: Option<termios> = None;
 
-pub fn get_winsize(fd: RawFd) -> Result<winsize> {
+fn get_winsize(fd: RawFd) -> Result<winsize> {
     let mut winsize = MaybeUninit::uninit();
     unsafe {
         if ioctl(fd, TIOCGWINSZ, winsize.as_mut_ptr()) != 0 {
@@ -21,8 +21,7 @@ pub fn get_winsize(fd: RawFd) -> Result<winsize> {
     }
 }
 
-#[allow(clippy::trivially_copy_pass_by_ref)]
-pub fn set_winsize(fd: RawFd, winsize: &winsize) -> Result<()> {
+fn set_winsize(fd: RawFd, winsize: &winsize) -> Result<()> {
     if unsafe { ioctl(fd, TIOCSWINSZ, winsize) } != 0 {
         Err(Error::last_os_error())
     } else {
@@ -30,7 +29,7 @@ pub fn set_winsize(fd: RawFd, winsize: &winsize) -> Result<()> {
     }
 }
 
-pub fn get_termios(fd: RawFd) -> Result<termios> {
+fn get_termios(fd: RawFd) -> Result<termios> {
     let mut termios = MaybeUninit::uninit();
     unsafe {
         if tcgetattr(fd, termios.as_mut_ptr()) != 0 {
@@ -41,7 +40,7 @@ pub fn get_termios(fd: RawFd) -> Result<termios> {
     }
 }
 
-pub fn set_termios(fd: RawFd, termios: &termios) -> Result<()> {
+fn set_termios(fd: RawFd, termios: &termios) -> Result<()> {
     if unsafe { tcsetattr(fd, TCSANOW, termios) } != 0 {
         Err(Error::last_os_error())
     } else {
@@ -91,7 +90,7 @@ extern "C" fn sigint_handler(_signal: c_int) {
     unsafe { exit(0) };
 }
 
-pub fn register_signal_handler(signal: c_int, handler: extern "C" fn(c_int)) -> Result<()> {
+fn register_signal_handler(signal: c_int, handler: extern "C" fn(c_int)) -> Result<()> {
     let mut act: sigaction = unsafe { MaybeUninit::zeroed().assume_init() };
     act.sa_sigaction = handler as sighandler_t;
     act.sa_flags = SA_RESTART;
@@ -119,8 +118,12 @@ extern "C" fn exit_handler() {
     println!("exited.");
 }
 
-pub fn set_exit_handler() {
-    unsafe { libc::atexit(exit_handler) };
+pub fn set_exit_handler() -> Result<()> {
+    if unsafe { libc::atexit(exit_handler) } != 0 {
+        Err(Error::last_os_error())
+    } else {
+        Ok(())
+    }
 }
 
 pub fn setup_terminal(fd: RawFd, isig: bool) -> Result<()> {

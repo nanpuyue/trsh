@@ -1,10 +1,10 @@
 [package]
 name = "trsh"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["南浦月 <nanpuyue@gmail.com>"]
 description = "A TLS encrypted Reverse Shell"
 homepage = "https://github.com/nanpuyue/trsh"
-repository = "https://github.com/nanpuyue/trsh.git"
+repository = "https://github.com/nanpuyue/trsh"
 keywords = ["reverse", "shell", "tls"]
 categories = ["command-line-utilities"]
 license = "MIT"

@@ -13,7 +13,7 @@ use term::{restore_termios, set_exit_handler};
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
     let matches = App::new("trsh")
-        .version("0.1.1")
+        .version("0.1.2")
         .author("南浦月 <nanpuyue@gmail.com>")
         .about("A TLS encrypted Reverse Shell")
         .arg(

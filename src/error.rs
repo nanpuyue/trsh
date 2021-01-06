@@ -20,15 +20,15 @@ impl Display for Error {
     }
 }
 
-impl Into<Error> for String {
-    fn into(self) -> Error {
-        Error::String(self)
+impl From<String> for Error {
+    fn from(s: String) -> Self {
+        Error::String(s)
     }
 }
 
-impl Into<Error> for &str {
-    fn into(self) -> Error {
-        Error::String(self.to_owned())
+impl From<&str> for Error {
+    fn from(s: &str) -> Self {
+        Error::String(s.to_owned())
     }
 }
 

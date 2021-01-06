@@ -1,12 +1,13 @@
 use std::fs::File;
 use std::io::Read;
+use std::pin::Pin;
 
 use openssl::base64::encode_block;
 use openssl::hash::MessageDigest;
-use openssl::ssl::{SslAcceptor, SslConnector, SslFiletype, SslMethod, SslVerifyMode};
+use openssl::ssl::{Ssl, SslAcceptor, SslConnector, SslFiletype, SslMethod, SslVerifyMode};
 use openssl::x509::X509;
 use tokio::net::TcpStream;
-use tokio_openssl::{accept, connect, SslStream};
+use tokio_openssl::SslStream;
 
 use crate::error::Result;
 
@@ -29,12 +30,15 @@ pub fn peer_digest(tls: &SslStream<TcpStream>) -> Result<String> {
 }
 
 pub async fn tls_accept(stream: TcpStream, cert: &str, key: &str) -> Result<SslStream<TcpStream>> {
-    let mut ssl_acceptor_builder = SslAcceptor::mozilla_modern(SslMethod::tls_server())?;
-    ssl_acceptor_builder.set_certificate_chain_file(cert)?;
-    ssl_acceptor_builder.set_private_key_file(key, SslFiletype::PEM)?;
+    let mut acceptor_builder = SslAcceptor::mozilla_modern(SslMethod::tls_server())?;
+    acceptor_builder.set_certificate_chain_file(cert)?;
+    acceptor_builder.set_private_key_file(key, SslFiletype::PEM)?;
 
-    let ssl_acceptor = ssl_acceptor_builder.build();
-    Ok(accept(&ssl_acceptor, stream).await?)
+    let acceptor = acceptor_builder.build();
+    let mut ssl_stream = SslStream::new(Ssl::new(acceptor.context())?, stream)?;
+
+    Pin::new(&mut ssl_stream).accept().await?;
+    Ok(ssl_stream)
 }
 
 pub async fn tls_connect(
@@ -46,6 +50,12 @@ pub async fn tls_connect(
     if !verify {
         connector_builder.set_verify(SslVerifyMode::NONE);
     }
-    let config = connector_builder.build().configure()?;
-    Ok(connect(config, sni, stream).await?)
+
+    let connector = connector_builder.build();
+    let mut ssl = Ssl::new(connector.context())?;
+    ssl.set_hostname(sni)?;
+    let mut ssl_stream = SslStream::new(ssl, stream)?;
+
+    Pin::new(&mut ssl_stream).connect().await?;
+    Ok(ssl_stream)
 }

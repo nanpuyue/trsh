@@ -4,7 +4,7 @@
 
 ```
 $ trsh -h
-trsh 0.1.2
+trsh 0.1.3
 南浦月 <nanpuyue@gmail.com>
 A TLS encrypted Reverse Shell
 

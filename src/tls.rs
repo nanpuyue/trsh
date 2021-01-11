@@ -51,9 +51,8 @@ pub async fn tls_connect(
         connector_builder.set_verify(SslVerifyMode::NONE);
     }
 
-    let connector = connector_builder.build();
-    let mut ssl = Ssl::new(connector.context())?;
-    ssl.set_hostname(sni)?;
+    let config = connector_builder.build().configure()?;
+    let ssl = config.into_ssl(sni)?;
     let mut ssl_stream = SslStream::new(ssl, stream)?;
 
     Pin::new(&mut ssl_stream).connect().await?;

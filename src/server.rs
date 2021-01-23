@@ -5,11 +5,12 @@ use tokio_fd::AsyncFd;
 
 use crate::error::Result;
 use crate::term::enter_raw_mode;
-use crate::tls::{cert_digest, tls_accept};
+use crate::tls::{acceptor_context, context_digest, tls_accept};
 use crate::util::listen_reuseport;
 
 pub async fn server(addr: &str, cert: &str, key: &str) -> Result<()> {
-    println!("Server fingerprint: {}", cert_digest(cert)?);
+    let ctx = acceptor_context(cert, key)?;
+    println!("Server fingerprint: {}", context_digest(&ctx)?);
 
     let listener = listen_reuseport(addr)?;
     println!("Waiting for client to connect...");
@@ -20,7 +21,7 @@ pub async fn server(addr: &str, cert: &str, key: &str) -> Result<()> {
     drop(listener);
     tcpstream.set_nodelay(true)?;
 
-    let tlsstream = tls_accept(tcpstream, cert, key).await?;
+    let tlsstream = tls_accept(tcpstream, &ctx).await?;
     let (reader, writer) = &mut io::split(tlsstream);
     let stdin = &mut AsyncFd::try_from(libc::STDIN_FILENO)?;
     let stdout = &mut AsyncFd::try_from(libc::STDOUT_FILENO)?;

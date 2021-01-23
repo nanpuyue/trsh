@@ -51,8 +51,7 @@ Or you can use a certificate trusted by the system without `-n`.
 ### Generate a self-signed certificate
 
 ```shell script
-openssl genrsa -out trsh.key 2048
-openssl req -new -x509 -days 365 -key trsh.key -out trsh.crt -subj "/CN=trsh"
+openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout trsh.key -out trsh.crt -subj '/CN=trsh'
 ```
 
 ## License
@@ -60,3 +59,7 @@ openssl req -new -x509 -days 365 -key trsh.key -out trsh.crt -subj "/CN=trsh"
 This project is licensed under the [MIT license].
 
 [MIT license]: https://github.com/nanpuyue/trsh/blob/master/LICENSE
+
+## Homepage
+
+[https://github.com/nanpuyue/trsh](https://github.com/nanpuyue/trsh)

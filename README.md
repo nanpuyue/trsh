@@ -9,20 +9,18 @@ trsh 0.1.3
 A TLS encrypted Reverse Shell
 
 USAGE:
-    trsh [FLAGS] [OPTIONS]
-
-FLAGS:
-    -h, --help       Prints help information
-    -r               Readonly mode (client)
-    -n               Do not verify the server certificate (client)
-    -V, --version    Prints version information
+    trsh [OPTIONS]
 
 OPTIONS:
     -c <FILE>             Certificate chain file (server, required)
     -d <DOMAIN>           Server name to verify (client)
+    -h, --help            Print help information
     -k <FILE>             Private key file (server, required)
     -l <IP:PORT>          Listen address (server, required)
+    -n                    Do not verify the server certificate (client)
+    -r                    Readonly mode (client)
     -s <HOST:PORT>        Server address to connect (client, required)
+    -V, --version         Print version information
 ```
 
 ### Server

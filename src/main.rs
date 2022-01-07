@@ -1,4 +1,7 @@
-use clap::{App, Arg};
+use std::net::SocketAddr;
+use std::path::PathBuf;
+
+use clap::Parser;
 
 mod client;
 mod error;
@@ -10,83 +13,70 @@ mod util;
 use error::Result;
 use term::{restore_termios, set_exit_handler};
 
+#[derive(Debug, Parser)]
+#[clap(version, author, about)]
+struct Args {
+    #[clap(
+        short,
+        parse(try_from_str),
+        value_name = "IP:PORT",
+        required_unless_present = "server",
+        requires_all = &["cert", "key"],
+        conflicts_with_all = &["server", "domain", "notverify", "readonly"],
+        help = "Listen address (server, required)"
+    )]
+    listen: Option<SocketAddr>,
+
+    #[clap(
+        short,
+        value_name = "HOST:PORT",
+        required_unless_present = "listen",
+        conflicts_with = "listen",
+        help = "Server address to connect (client, required)"
+    )]
+    server: Option<String>,
+
+    #[clap(
+        short,
+        parse(try_from_str),
+        value_name = "FILE",
+        help = "Certificate chain file (server, required)"
+    )]
+    cert: Option<PathBuf>,
+
+    #[clap(
+        short,
+        value_name = "FILE",
+        parse(try_from_str),
+        help = "Private key file (server, required)"
+    )]
+    key: Option<PathBuf>,
+
+    #[clap(short, help = "Server name to verify (client)")]
+    domain: Option<String>,
+
+    #[clap(short, help = "Do not verify the server certificate (client)")]
+    notverify: bool,
+
+    #[clap(short, help = "Readonly mode (client)")]
+    readonly: bool,
+}
+
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
-    let matches = App::new("trsh")
-        .version("0.1.3")
-        .author("南浦月 <nanpuyue@gmail.com>")
-        .about("A TLS encrypted Reverse Shell")
-        .arg(
-            Arg::new("listen")
-                .short('l')
-                .value_name("IP:PORT")
-                .about("Listen address (server, required)")
-                .takes_value(true)
-                .requires_all(&["cert", "key"])
-                .required_unless_present("server"),
-        )
-        .arg(
-            Arg::new("cert")
-                .short('c')
-                .value_name("FILE")
-                .about("Certificate chain file (server, required)")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new("key")
-                .short('k')
-                .value_name("FILE")
-                .about("Private key file (server, required)")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new("server")
-                .short('s')
-                .value_name("HOST:PORT")
-                .about("Server address to connect (client, required)")
-                .takes_value(true)
-                .required_unless_present("listen")
-                .conflicts_with("listen"),
-        )
-        .arg(
-            Arg::new("domain")
-                .short('d')
-                .value_name("DOMAIN")
-                .about("Server name to verify (client)")
-                .takes_value(true)
-                .conflicts_with("listen"),
-        )
-        .arg(
-            Arg::new("verify")
-                .short('n')
-                .about("Do not verify the server certificate (client)")
-                .takes_value(false)
-                .conflicts_with("listen"),
-        )
-        .arg(
-            Arg::new("readonly")
-                .short('r')
-                .about("Readonly mode (client)")
-                .takes_value(false)
-                .conflicts_with("listen"),
-        )
-        .get_matches();
+    let args = Args::parse();
 
     let _ = set_exit_handler();
 
-    let ret = if let Some(listen) = matches.value_of("listen") {
-        let cert = matches.value_of("cert").unwrap();
-        let key = matches.value_of("key").unwrap();
-        server::server(listen, cert, key).await
-    } else if let Some(server) = matches.value_of("server") {
-        let sni = if let Some(domain) = matches.value_of("domain") {
+    let ret = if let Some(listen) = args.listen {
+        server::server(listen, &args.cert.unwrap(), &args.key.unwrap()).await
+    } else if let Some(server) = args.server {
+        let sni = if let Some(domain) = &args.domain {
             domain
         } else {
             server.split(':').next().unwrap_or_default()
         };
-        let verify = matches.index_of("verify").is_none();
-        let readonly = matches.index_of("readonly").is_some();
-        client::client(server, sni, verify, readonly).await
+        client::client(&server, sni, !args.notverify, args.readonly).await
     } else {
         Ok(())
     };

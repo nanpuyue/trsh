@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::pin::Pin;
 
 use openssl::base64::encode_block;
@@ -23,8 +24,7 @@ pub fn peer_digest(tls: &SslStream<TcpStream>) -> Result<String> {
         .digest(MessageDigest::sha256())?;
     Ok(encode_block(digest.as_ref()))
 }
-
-pub fn acceptor_context(cert: &str, key: &str) -> Result<SslContext> {
+pub fn acceptor_context(cert: &Path, key: &Path) -> Result<SslContext> {
     let mut acceptor_builder = SslAcceptor::mozilla_modern(SslMethod::tls_server())?;
     acceptor_builder.set_certificate_chain_file(cert)?;
     acceptor_builder.set_private_key_file(key, SslFiletype::PEM)?;

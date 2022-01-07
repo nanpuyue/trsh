@@ -1,7 +1,6 @@
 use std::net::SocketAddr;
 use std::pin::Pin;
 use std::ptr::{null, null_mut};
-use std::str::FromStr;
 use std::task::{Context, Poll, Poll::*};
 
 use tokio::io::{self, AsyncRead, ReadBuf};
@@ -74,8 +73,7 @@ impl<T: AsyncRead + Unpin, U: AsyncRead + Unpin> AsyncRead for Merge<T, U> {
     }
 }
 
-pub fn listen_reuseport(addr: &str) -> Result<TcpListener> {
-    let addr = SocketAddr::from_str(addr)?;
+pub fn listen_reuseport(addr: SocketAddr) -> Result<TcpListener> {
     let socket = match addr {
         SocketAddr::V4(_) => TcpSocket::new_v4(),
         SocketAddr::V6(_) => TcpSocket::new_v6(),

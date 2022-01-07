@@ -1,4 +1,6 @@
 use std::convert::TryFrom;
+use std::net::SocketAddr;
+use std::path::Path;
 
 use tokio::{io, select};
 use tokio_fd::AsyncFd;
@@ -8,7 +10,7 @@ use crate::term::enter_raw_mode;
 use crate::tls::{acceptor_context, context_digest, tls_accept};
 use crate::util::listen_reuseport;
 
-pub async fn server(addr: &str, cert: &str, key: &str) -> Result<()> {
+pub async fn server(addr: SocketAddr, cert: &Path, key: &Path) -> Result<()> {
     let ctx = acceptor_context(cert, key)?;
     println!("Server fingerprint: {}", context_digest(&ctx)?);
 

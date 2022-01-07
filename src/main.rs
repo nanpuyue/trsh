@@ -83,5 +83,5 @@ async fn main() -> Result<()> {
 
     let _ = restore_termios();
 
-    ret.map_err(|e| e.to_string().into())
+    ret
 }

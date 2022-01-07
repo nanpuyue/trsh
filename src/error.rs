@@ -1,21 +1,29 @@
-use std::fmt::{self, Display, Formatter};
+use std::fmt::{self, Debug, Display, Formatter};
 use std::{error, result};
 
 pub type Result<T> = result::Result<T, Error>;
 
 pub trait IntoError {}
 
-#[derive(Debug)]
 pub enum Error {
     Boxed(Box<dyn error::Error + Send>),
     String(String),
 }
 
+impl Debug for Error {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::String(x) => Debug::fmt(x, f),
+            Self::Boxed(x) => Debug::fmt(x, f),
+        }
+    }
+}
+
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::String(s) => s.fmt(f),
-            Self::Boxed(e) => e.fmt(f),
+            Self::String(x) => Display::fmt(x, f),
+            Self::Boxed(x) => Display::fmt(x, f),
         }
     }
 }
